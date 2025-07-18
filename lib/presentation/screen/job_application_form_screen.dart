@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:form_handling_app/core/extensions/context_theme_extension.dart';
 
 import '../widgets/job_application_form.dart';
 
 class JobApplicationScreen extends StatelessWidget {
   final void Function(Locale) onLocaleChange;
   final VoidCallback onThemeToggle;
-  final bool isDark;
-  final Locale locale;
-  const JobApplicationScreen({
-    super.key,
-    required this.onLocaleChange,
-    required this.onThemeToggle,
-    required this.isDark,
-    required this.locale,
-  });
+  final Locale locale = const Locale('en');
+
+  const JobApplicationScreen({super.key, required this.onLocaleChange, required this.onThemeToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +24,11 @@ class JobApplicationScreen extends StatelessWidget {
             tooltip: locale.languageCode == 'en' ? 'فارسی' : 'English',
           ),
           IconButton(
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            icon: Icon(context.isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: onThemeToggle,
             tooltip: locale.languageCode == 'fa'
-                ? (isDark ? 'حالت روشن' : 'حالت تاریک')
-                : (isDark ? 'Light Mode' : 'Dark Mode'),
+                ? (context.isDark ? 'حالت روشن' : 'حالت تاریک')
+                : (context.isDark ? 'Light Mode' : 'Dark Mode'),
           ),
         ],
       ),
