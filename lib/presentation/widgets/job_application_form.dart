@@ -4,8 +4,8 @@ import 'package:form_handling_app/core/extensions/context_theme_extension.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../data/job_application.dart';
-import '../data/previous_job.dart';
+import '../../data/job_application.dart';
+import '../../data/previous_job.dart';
 import 'address_form.dart';
 import 'previuse_job_form.dart';
 
