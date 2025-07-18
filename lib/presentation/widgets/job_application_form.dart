@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:form_handling_app/core/extensions/context_theme_extension.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -429,10 +430,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                isFa ? 'سوابق شغلی قبلی' : 'Previous Jobs',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text(isFa ? 'سوابق شغلی قبلی' : 'Previous Jobs', style: context.textTheme.titleMedium),
               ElevatedButton.icon(
                 icon: const Icon(Icons.add),
                 label: Text(isFa ? 'افزودن' : 'Add'),
@@ -492,10 +490,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           if (_gender.isEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-              child: Text(
-                isFa ? 'جنسیت الزامی است' : 'Gender is required',
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
+              child: Text(isFa ? 'جنسیت الزامی است' : 'Gender is required', style: context.errorTextStyle),
             ),
           // Skills
           Text(isFa ? 'مهارت‌ها' : 'Skills'),
@@ -523,7 +518,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
               padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
               child: Text(
                 isFa ? 'حداقل یک مهارت را انتخاب کنید' : 'Select at least one skill',
-                style: const TextStyle(color: Colors.red, fontSize: 12),
+                style: context.errorTextStyle,
               ),
             ),
           // Availability
@@ -545,7 +540,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           if (_resumeError != null)
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-              child: Text(_resumeError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+              child: Text(_resumeError!, style: context.errorTextStyle),
             ),
           const SizedBox(height: 24),
           // Buttons

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:form_handling_app/core/extensions/context_theme_extension.dart';
 
 class AddressForm extends StatelessWidget {
   final TextEditingController streetController;
@@ -21,7 +22,7 @@ class AddressForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(isFa ? 'آدرس' : 'Address', style: Theme.of(context).textTheme.titleMedium),
+        Text(isFa ? 'آدرس' : 'Address', style: context.textTheme.titleMedium),
         TextFormField(
           controller: streetController,
           decoration: InputDecoration(labelText: isFa ? 'خیابان' : 'Street'),
