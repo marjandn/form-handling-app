@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:form_handling_app/core/extensions/localization_extension.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/previous_job.dart';
 
 class PreviousJobForm extends StatefulWidget {
   final PreviousJob job;
-  final Locale locale;
+
   final VoidCallback onRemove;
-  const PreviousJobForm({super.key, required this.job, required this.locale, required this.onRemove});
+  const PreviousJobForm({super.key, required this.job, required this.onRemove});
 
   @override
   State<PreviousJobForm> createState() => _PreviousJobFormState();
@@ -27,11 +28,13 @@ class _PreviousJobFormState extends State<PreviousJobForm> {
     _companyController = TextEditingController(text: widget.job.company);
     _startController = TextEditingController(
       text: widget.job.start != null
-          ? DateFormat.yMd(widget.locale.languageCode).format(widget.job.start!)
+          ? DateFormat.yMd(context.localization.localeName).format(widget.job.start!)
           : '',
     );
     _endController = TextEditingController(
-      text: widget.job.end != null ? DateFormat.yMd(widget.locale.languageCode).format(widget.job.end!) : '',
+      text: widget.job.end != null
+          ? DateFormat.yMd(context.localization.localeName).format(widget.job.end!)
+          : '',
     );
     _descController = TextEditingController(text: widget.job.description);
   }
@@ -52,16 +55,15 @@ class _PreviousJobFormState extends State<PreviousJobForm> {
       initialDate: DateTime(2015),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      locale: widget.locale,
+      locale: context.currentLocale,
     );
     if (picked != null) {
-      controller.text = DateFormat.yMd(widget.locale.languageCode).format(picked);
+      controller.text = DateFormat.yMd(context.localization.localeName).format(picked);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isFa = widget.locale.languageCode == 'fa';
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
@@ -70,23 +72,23 @@ class _PreviousJobFormState extends State<PreviousJobForm> {
           children: [
             Row(
               children: [
-                Expanded(child: Text(isFa ? 'شغل قبلی' : 'Previous Job')),
+                Expanded(child: Text(context.localization.previousJob)),
                 IconButton(
                   icon: const Icon(Icons.delete),
                   onPressed: widget.onRemove,
-                  tooltip: isFa ? 'حذف' : 'Remove',
+                  tooltip: context.localization.remove,
                 ),
               ],
             ),
             TextFormField(
               controller: _jobTitleController,
-              decoration: InputDecoration(labelText: isFa ? 'عنوان شغلی' : 'Job Title'),
+              decoration: InputDecoration(labelText: context.localization.jobTitle),
               onChanged: (v) => widget.job.jobTitle = v,
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _companyController,
-              decoration: InputDecoration(labelText: isFa ? 'شرکت' : 'Company'),
+              decoration: InputDecoration(labelText: context.localization.company),
               onChanged: (v) => widget.job.company = v,
             ),
             const SizedBox(height: 8),
@@ -96,7 +98,7 @@ class _PreviousJobFormState extends State<PreviousJobForm> {
                   child: TextFormField(
                     controller: _startController,
                     decoration: InputDecoration(
-                      labelText: isFa ? 'تاریخ شروع' : 'Start Date',
+                      labelText: context.localization.startDate,
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.calendar_today),
                         onPressed: () => _pickDate(_startController),
@@ -104,7 +106,7 @@ class _PreviousJobFormState extends State<PreviousJobForm> {
                     ),
                     readOnly: true,
                     onChanged: (v) {
-                      widget.job.start = DateFormat.yMd(widget.locale.languageCode).parse(v);
+                      widget.job.start = DateFormat.yMd(context.localization.localeName).parse(v);
                     },
                   ),
                 ),
@@ -113,7 +115,7 @@ class _PreviousJobFormState extends State<PreviousJobForm> {
                   child: TextFormField(
                     controller: _endController,
                     decoration: InputDecoration(
-                      labelText: isFa ? 'تاریخ پایان' : 'End Date',
+                      labelText: context.localization.endtDate,
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.calendar_today),
                         onPressed: () => _pickDate(_endController),
@@ -121,7 +123,7 @@ class _PreviousJobFormState extends State<PreviousJobForm> {
                     ),
                     readOnly: true,
                     onChanged: (v) {
-                      widget.job.end = DateFormat.yMd(widget.locale.languageCode).parse(v);
+                      widget.job.end = DateFormat.yMd(context.localization.localeName).parse(v);
                     },
                   ),
                 ),
@@ -130,7 +132,7 @@ class _PreviousJobFormState extends State<PreviousJobForm> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _descController,
-              decoration: InputDecoration(labelText: isFa ? 'توضیحات' : 'Description'),
+              decoration: InputDecoration(labelText: context.localization.description),
               onChanged: (v) => widget.job.description = v,
               maxLines: 2,
             ),

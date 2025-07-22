@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:form_handling_app/core/config/app_settings.dart';
+import 'package:form_handling_app/l10n/app_localizations.dart';
 import 'presentation/screen/job_application_form_screen.dart';
 
 void main() {
@@ -21,27 +22,26 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: appSettings,
-      builder: (context, child) => MaterialApp(
-        title: 'Job Application',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber, brightness: Brightness.light),
-        ),
-        darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.amberAccent, brightness: Brightness.dark),
-        ),
-        themeMode: appSettings.theme,
-        locale: appSettings.locale,
-        supportedLocales: const [Locale('en'), Locale('fa')],
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        home: JobApplicationScreen(
-          onLocaleChange: appSettings.setLocale,
-          onThemeToggle: appSettings.toggleTheme,
-        ),
-      ),
+      builder: (context, widget) {
+        return MaterialApp(
+          title: 'Job Application',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber, brightness: Brightness.light),
+          ),
+          darkTheme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.amberAccent, brightness: Brightness.dark),
+          ),
+          themeMode: appSettings.theme,
+          locale: appSettings.locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          debugShowCheckedModeBanner: false,
+          home: JobApplicationScreen(
+            onLocaleChange: appSettings.setLocale,
+            onThemeToggle: appSettings.toggleTheme,
+          ),
+        );
+      },
     );
   }
 }

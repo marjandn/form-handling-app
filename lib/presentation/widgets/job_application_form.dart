@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:form_handling_app/core/extensions/context_theme_extension.dart';
+import 'package:form_handling_app/core/extensions/localization_extension.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -67,9 +68,6 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
   DateTime? _currentStart;
   DateTime? _currentEnd;
 
-  // Localization
-  Locale get _locale => Localizations.localeOf(context);
-
   // Save as draft
   Future<void> _saveDraft() async {
     final prefs = await SharedPreferences.getInstance();
@@ -99,9 +97,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
     await prefs.setStringList('job_form_skills', _selectedSkills);
     await prefs.setBool('job_form_available', _available);
     await prefs.setString('job_form_resumePath', _resumePath ?? '');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_locale.languageCode == 'fa' ? 'پیش‌نویس ذخیره شد' : 'Draft saved')),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.localization.draftSaved)));
   }
 
   // Load draft
@@ -183,9 +179,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
       final file = result.files.single;
       if (file.size > 2 * 1024 * 1024) {
         setState(() {
-          _resumeError = _locale.languageCode == 'fa'
-              ? 'فایل باید کمتر از ۲ مگابایت باشد'
-              : 'File must be less than 2MB';
+          _resumeError = context.localization.fileMustBeLessThan2MG;
         });
         return;
       }
@@ -203,10 +197,10 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
       initialDate: initialDate ?? DateTime(2000),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      locale: _locale,
+      locale: context.currentLocale,
     );
     if (picked != null) {
-      controller.text = DateFormat.yMd(_locale.languageCode).format(picked);
+      controller.text = DateFormat.yMd(context.currentLocale).format(picked);
     }
   }
 
@@ -216,11 +210,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
       _emailError = null;
     });
     if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_locale.languageCode == 'fa' ? 'لطفاً خطاها را برطرف کنید' : 'Please fix the errors'),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.localization.fixErrors)));
       return;
     }
     setState(() {
@@ -229,9 +219,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
     final emailExists = await _checkEmailExists(_emailController.text);
     setState(() {
       _emailChecking = false;
-      _emailError = emailExists
-          ? (_locale.languageCode == 'fa' ? 'این ایمیل قبلاً ثبت شده است' : 'This email already exists')
-          : null;
+      _emailError = emailExists ? context.localization.emailExists : null;
     });
     if (emailExists) {
       _formKey.currentState!.validate();
@@ -239,20 +227,14 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
     }
     if (_resumePath == null) {
       setState(() {
-        _resumeError = _locale.languageCode == 'fa'
-            ? 'لطفاً رزومه را بارگذاری کنید'
-            : 'Please upload your resume';
+        _resumeError = context.localization.pleaseUploadYourResume;
       });
       return;
     }
     // All good
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _locale.languageCode == 'fa' ? 'فرم با موفقیت ارسال شد!' : 'Form submitted successfully!',
-        ),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(context.localization.formSubmittedSuccessfully)));
   }
 
   @override
@@ -275,7 +257,6 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
 
   @override
   Widget build(BuildContext context) {
-    final isFa = _locale.languageCode == 'fa';
     return Form(
       key: _formKey,
       child: Column(
@@ -284,13 +265,13 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           // Full Name
           TextFormField(
             controller: _fullNameController,
-            decoration: InputDecoration(labelText: isFa ? 'نام کامل' : 'Full Name'),
+            decoration: InputDecoration(labelText: context.localization.fullName),
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return isFa ? 'نام الزامی است' : 'Full name is required';
+                return context.localization.fullNameIsRequired;
               }
               if (v.trim().length < 3) {
-                return isFa ? 'حداقل ۳ کاراکتر' : 'At least 3 characters';
+                return context.localization.atLeast3Characters;
               }
               return null;
             },
@@ -301,7 +282,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
             controller: _emailController,
             focusNode: _emailFocus,
             decoration: InputDecoration(
-              labelText: isFa ? 'ایمیل' : 'Email',
+              labelText: context.localization.email,
               suffixIcon: _emailChecking
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                   : null,
@@ -309,11 +290,11 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
             keyboardType: TextInputType.emailAddress,
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return isFa ? 'ایمیل الزامی است' : 'Email is required';
+                return context.localization.emailIsRequired;
               }
               final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
               if (!emailRegex.hasMatch(v.trim())) {
-                return isFa ? 'ایمیل معتبر نیست' : 'Invalid email';
+                return context.localization.invalidEmail;
               }
               if (_emailError != null) return _emailError;
               return null;
@@ -323,7 +304,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           // Phone
           TextFormField(
             controller: _phoneController,
-            decoration: InputDecoration(labelText: isFa ? 'تلفن' : 'Phone'),
+            decoration: InputDecoration(labelText: context.localization.phone),
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 12),
@@ -331,7 +312,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           TextFormField(
             controller: _dobController,
             decoration: InputDecoration(
-              labelText: isFa ? 'تاریخ تولد' : 'Date of Birth',
+              labelText: context.localization.dateOfBirth,
               suffixIcon: IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: () => _pickDate(_dobController),
@@ -340,7 +321,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
             readOnly: true,
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return isFa ? 'تاریخ تولد الزامی است' : 'Date of birth is required';
+                return context.localization.emailIsRequired;
               }
               return null;
             },
@@ -352,24 +333,23 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
             cityController: _cityController,
             stateController: _stateController,
             zipController: _zipController,
-            locale: _locale,
           ),
           const SizedBox(height: 16),
           // Currently Employed
           CheckboxListTile(
             value: _currentlyEmployed,
             onChanged: (v) => setState(() => _currentlyEmployed = v ?? false),
-            title: Text(isFa ? 'در حال حاضر شاغل هستم' : 'Currently Employed'),
+            title: Text(context.localization.currentlyEmployed),
           ),
           if (_currentlyEmployed)
             Column(
               children: [
                 TextFormField(
                   controller: _currentCompanyController,
-                  decoration: InputDecoration(labelText: isFa ? 'شرکت فعلی' : 'Current Company'),
+                  decoration: InputDecoration(labelText: context.localization.currentCompany),
                   validator: (v) {
                     if (_currentlyEmployed && (v == null || v.trim().isEmpty)) {
-                      return isFa ? 'شرکت الزامی است' : 'Company required';
+                      return context.localization.companyIsRequired;
                     }
                     return null;
                   },
@@ -377,10 +357,10 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _currentJobTitleController,
-                  decoration: InputDecoration(labelText: isFa ? 'عنوان شغلی فعلی' : 'Current Job Title'),
+                  decoration: InputDecoration(labelText: context.localization.jobTitle),
                   validator: (v) {
                     if (_currentlyEmployed && (v == null || v.trim().isEmpty)) {
-                      return isFa ? 'عنوان شغلی الزامی است' : 'Job title required';
+                      return context.localization.jobTitleIsRequired;
                     }
                     return null;
                   },
@@ -392,7 +372,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
                       child: TextFormField(
                         controller: _currentStartController,
                         decoration: InputDecoration(
-                          labelText: isFa ? 'تاریخ شروع' : 'Start Date',
+                          labelText: context.localization.startDate,
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.calendar_today),
                             onPressed: () => _pickDate(_currentStartController),
@@ -401,7 +381,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
                         readOnly: true,
                         validator: (v) {
                           if (_currentlyEmployed && (v == null || v.trim().isEmpty)) {
-                            return isFa ? 'تاریخ شروع الزامی است' : 'Start date required';
+                            return context.localization.startDateIsRequried;
                           }
                           return null;
                         },
@@ -412,7 +392,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
                       child: TextFormField(
                         controller: _currentEndController,
                         decoration: InputDecoration(
-                          labelText: isFa ? 'تاریخ پایان' : 'End Date',
+                          labelText: context.localization.endtDate,
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.calendar_today),
                             onPressed: () => _pickDate(_currentEndController),
@@ -430,10 +410,10 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(isFa ? 'سوابق شغلی قبلی' : 'Previous Jobs', style: context.textTheme.titleMedium),
+              Text(context.localization.previousJobs, style: context.textTheme.titleMedium),
               ElevatedButton.icon(
                 icon: const Icon(Icons.add),
-                label: Text(isFa ? 'افزودن' : 'Add'),
+                label: Text(context.localization.add),
                 onPressed: () {
                   setState(() {
                     _previousJobs.add(PreviousJob());
@@ -448,7 +428,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
             return PreviousJobForm(
               key: ValueKey('prevjob$idx'),
               job: job,
-              locale: _locale,
+
               onRemove: () {
                 setState(() {
                   _previousJobs.removeAt(idx);
@@ -458,7 +438,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           }),
           const SizedBox(height: 16),
           // Gender
-          Text(isFa ? 'جنسیت' : 'Gender'),
+          Text(context.localization.gender),
           Row(
             children: [
               Expanded(
@@ -466,7 +446,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
                   value: 'male',
                   groupValue: _gender,
                   onChanged: (v) => setState(() => _gender = v ?? ''),
-                  title: Text(isFa ? 'مرد' : 'Male'),
+                  title: Text(context.localization.male),
                 ),
               ),
               Expanded(
@@ -474,7 +454,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
                   value: 'female',
                   groupValue: _gender,
                   onChanged: (v) => setState(() => _gender = v ?? ''),
-                  title: Text(isFa ? 'زن' : 'Female'),
+                  title: Text(context.localization.female),
                 ),
               ),
               Expanded(
@@ -482,7 +462,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
                   value: 'other',
                   groupValue: _gender,
                   onChanged: (v) => setState(() => _gender = v ?? ''),
-                  title: Text(isFa ? 'دیگر' : 'Other'),
+                  title: Text(context.localization.other),
                 ),
               ),
             ],
@@ -490,10 +470,10 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           if (_gender.isEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-              child: Text(isFa ? 'جنسیت الزامی است' : 'Gender is required', style: context.errorTextStyle),
+              child: Text(context.localization.genderIsRequired, style: context.errorTextStyle),
             ),
           // Skills
-          Text(isFa ? 'مهارت‌ها' : 'Skills'),
+          Text(context.localization.skills),
           Wrap(
             spacing: 8,
             children: _allSkills.map((skill) {
@@ -516,24 +496,21 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           if (_selectedSkills.isEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-              child: Text(
-                isFa ? 'حداقل یک مهارت را انتخاب کنید' : 'Select at least one skill',
-                style: context.errorTextStyle,
-              ),
+              child: Text(context.localization.selectAtLeastOneSkill, style: context.errorTextStyle),
             ),
           // Availability
           SwitchListTile(
             value: _available,
             onChanged: (v) => setState(() => _available = v),
-            title: Text(isFa ? 'آیا در دسترس هستید؟' : 'Available?'),
+            title: Text(context.localization.available),
           ),
           // Resume upload
           ListTile(
-            title: Text(isFa ? 'بارگذاری رزومه (PDF, <۲MB)' : 'Upload Resume (PDF, <2MB)'),
+            title: Text(context.localization.uploadPDF),
             subtitle: _resumePath != null ? Text(_resumePath!) : null,
             trailing: ElevatedButton.icon(
               icon: const Icon(Icons.upload_file),
-              label: Text(isFa ? 'انتخاب فایل' : 'Pick File'),
+              label: Text(context.localization.pickFile),
               onPressed: _pickResume,
             ),
           ),
@@ -547,24 +524,21 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
-                  onPressed: _saveDraft,
-                  child: Text(isFa ? 'ذخیره پیش‌نویس' : 'Save as Draft'),
-                ),
+                child: ElevatedButton(onPressed: _saveDraft, child: Text(context.localization.saveAsDraft)),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: OutlinedButton(onPressed: _resetForm, child: Text(isFa ? 'بازنشانی' : 'Reset')),
+                child: OutlinedButton(onPressed: _resetForm, child: Text(context.localization.resset)),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: ElevatedButton(onPressed: _submit, child: Text(isFa ? 'ارسال' : 'Submit')),
+                child: ElevatedButton(onPressed: _submit, child: Text(context.localization.submit)),
               ),
             ],
           ),
           const SizedBox(height: 12),
           // Load draft button
-          TextButton(onPressed: _loadDraft, child: Text(isFa ? 'بارگذاری پیش‌نویس' : 'Load Draft')),
+          TextButton(onPressed: _loadDraft, child: Text(context.localization.loadAsDraft)),
         ],
       ),
     );
